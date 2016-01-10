@@ -1,7 +1,6 @@
 package com.grofers.mqttclient;
 
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -10,32 +9,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttTopic;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-import org.w3c.dom.Text;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -150,7 +141,7 @@ public class MqttService extends Service implements MqttCallback {
     /************************************************************************/
     // connection to the message broker
     //private IMqttClient mqttClient = null;
-    private GrofersMqttClient mqttClient = null;
+    private KhooniMqttClient mqttClient = null;
 
     // receiver that notifies the Service when the phone gets data connection
     private NetworkConnectionIntentReceiver netConnReceiver;
@@ -341,6 +332,10 @@ public class MqttService extends Service implements MqttCallback {
 
         if(!isOnline || !isConnected){
             Log.e("handlePublishMessageIntent:", " isOnline()=" + isOnline + ", isConnected()=" + isConnected);
+            //TODO: Save all outgoing messages in db and fire those messages when the client connects
+            //back
+
+
             return;
         }
 
@@ -534,7 +529,7 @@ public class MqttService extends Service implements MqttCallback {
             //TODO: define persistence
             //MqttClientPersistence persistence = new MqttDefaultFilePersistence();
 
-            mqttClient = new GrofersMqttClient(mqttConnSpec,generateClientId(),mMqttPersistence);
+            mqttClient = new KhooniMqttClient(mqttConnSpec,generateClientId(),mMqttPersistence);
             mqttClient.setCallback(this);
 
             // register this client app has being able to receive messages
@@ -643,6 +638,7 @@ public class MqttService extends Service implements MqttCallback {
             try
             {
                 //Subscribe to all the topics available
+                //Number of elements in topics and QoS should be same
                 mqttClient.subscribe(topics, qualitiesOfService);
 
                 subscribed = true;
