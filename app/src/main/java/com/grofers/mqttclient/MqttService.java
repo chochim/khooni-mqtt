@@ -266,7 +266,7 @@ public class MqttService extends Service implements MqttCallback {
                     // note that this topicName could include a wildcard, so
                     //  even just with one subscription, we could receive
                     //  messages for multiple topics
-                    subscribeToTopic(topicName);
+                    subscribeToTopic(mTopics);
                 }
             }
             else
@@ -627,7 +627,7 @@ public class MqttService extends Service implements MqttCallback {
      * Send a request to the message broker to be sent messages published with
      *  the specified topic name. Wildcards are allowed.
      */
-    private void subscribeToTopic(String topicName)
+    private void subscribeToTopic(String [] topics)
     {
         boolean subscribed = false;
 
@@ -643,7 +643,7 @@ public class MqttService extends Service implements MqttCallback {
             try
             {
                 //Subscribe to all the topics available
-                mqttClient.subscribe(mTopics, qualitiesOfService);
+                mqttClient.subscribe(topics, qualitiesOfService);
 
                 subscribed = true;
             }
@@ -798,7 +798,7 @@ public class MqttService extends Service implements MqttCallback {
                 {
                     // we subscribe to a topic - registering to receive push
                     //  notifications with a particular key
-                    subscribeToTopic(topicName);
+                    subscribeToTopic(mTopics);
                 }
             }
 
@@ -896,7 +896,7 @@ public class MqttService extends Service implements MqttCallback {
 
                 // reconnect
                 if (connectToBroker()) {
-                    subscribeToTopic(topicName);
+                    subscribeToTopic(mTopics);
                 }
             }
 
@@ -1055,7 +1055,7 @@ public class MqttService extends Service implements MqttCallback {
 
             // try to reconnect
             if (connectToBroker()) {
-                subscribeToTopic(topicName);
+                subscribeToTopic(mTopics);
             }
         }
 
