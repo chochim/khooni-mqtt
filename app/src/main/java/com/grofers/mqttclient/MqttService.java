@@ -302,7 +302,7 @@ public class MqttService extends Service implements MqttCallback {
             // if we have been running already, we re-send any stored data
             rebroadcastStatus();
             //TODO: Check--->
-            //rebroadcastReceivedMessages();
+            rebroadcastReceivedMessages();
         }
     }
 
@@ -404,6 +404,7 @@ public class MqttService extends Service implements MqttCallback {
 
     private void broadcastReceivedMessage(String topic, String message)
     {
+        Log.d("BROADCAST RECEIVED","topic: "+topic+", msg="+message);
         // pass a message received from the MQTT server on to the Activity UI
         //   (for times when it is running / active) so that it can be displayed
         //   in the app GUI
