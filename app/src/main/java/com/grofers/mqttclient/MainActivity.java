@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity
                 actionIntent.putExtra(MqttService.MQTT_PUBLISH_MSG_TOPIC, "ic");
                 String message = "message bheja";
                 actionIntent.putExtra(MqttService.MQTT_PUBLISH_MSG, message.getBytes() );
+                actionIntent.putExtra(MqttService.MQTT_QA1, 1);
                 mContext.startService(actionIntent);
             }
         });
@@ -81,7 +82,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void handleStatus(MqttService.MQTTConnectionStatus status, String reason) {
         Log.d("handleStatus:","status = "+status+", reason = "+reason);
-        Log.d("currentTrace: ", TextUtils.join("\n",Thread.currentThread().getStackTrace()));
+        //Log.d("currentTrace: ", TextUtils.join("\n",Thread.currentThread().getStackTrace()));
     }
 
 

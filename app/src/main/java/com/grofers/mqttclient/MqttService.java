@@ -62,6 +62,7 @@ public class MqttService extends Service implements MqttCallback {
     // constants used by status bar notifications
     public static final int MQTT_NOTIFICATION_ONGOING = 1;
     public static final int MQTT_NOTIFICATION_UPDATE  = 2;
+    public static final String MQTT_QA1 = "com.qonect.services.mqtt.STATUS_MSG";
 
 
     // constants used to define MQTT connection status
@@ -330,6 +331,7 @@ public class MqttService extends Service implements MqttCallback {
         boolean isOnline = isOnline();
         boolean isConnected = isAlreadyConnected();
 
+        /*
         if(!isOnline || !isConnected){
             Log.e("handlePublishMessageIntent:", " isOnline()=" + isOnline + ", isConnected()=" + isConnected);
             //TODO: Save all outgoing messages in db and fire those messages when the client connects
@@ -337,7 +339,7 @@ public class MqttService extends Service implements MqttCallback {
 
 
             return;
-        }
+        }*/
 
         byte[] payload = intent.getByteArrayExtra(MQTT_PUBLISH_MSG);
         String topic = intent.getStringExtra(MQTT_PUBLISH_MSG_TOPIC);
@@ -347,7 +349,7 @@ public class MqttService extends Service implements MqttCallback {
         {
             MqttMessage msg = new MqttMessage(payload);
             msg.setQos(1);
-            mqttClient.publish(topic, new MqttMessage(payload));
+            mqttClient.publish(topic, msg);
         }
         catch(MqttException e)
         {
@@ -1065,6 +1067,8 @@ public class MqttService extends Service implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
+        Log.d("MqttMessageArrived","Topic->"+topic+", message="+mqttMessage.toString()+", isDuplicate?="+mqttMessage.isDuplicate());
+
 
         // we protect against the phone switching off while we're doing this
         //  by requesting a wake lock - we request the minimum possible wake
@@ -1083,9 +1087,8 @@ public class MqttService extends Service implements MqttCallback {
         //
         //  for times when the app's Activity UI is not running, the Service
         //   will need to safely store the data that it receives
-        //if (addReceivedMessageToStore(topic, messageBody))
-        if(addReceivedMessageToStore(topic, messageBody))
-        {
+        //if(addReceivedMessageToStore(topic, messageBody))
+        //{
             // this is a new message - a value we haven't seen before
 
             //
@@ -1097,7 +1100,7 @@ public class MqttService extends Service implements MqttCallback {
             // inform the user (for times when the Activity UI isn't running)
             //   that there is new data available
             notifyUser("New data received", topic, messageBody);
-        }
+        //}
 
         // receiving this message will have kept the connection alive for us, so
         //  we take advantage of this to postpone the next scheduled ping
