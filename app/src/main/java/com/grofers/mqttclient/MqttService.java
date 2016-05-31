@@ -1,7 +1,6 @@
 package com.grofers.mqttclient;
 
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -10,32 +9,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttTopic;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-import org.w3c.dom.Text;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -71,6 +62,7 @@ public class MqttService extends Service implements MqttCallback {
     // constants used by status bar notifications
     public static final int MQTT_NOTIFICATION_ONGOING = 1;
     public static final int MQTT_NOTIFICATION_UPDATE  = 2;
+    public static final String MQTT_QA1 = "com.qonect.services.mqtt.STATUS_MSG";
 
 
     // constants used to define MQTT connection status
@@ -150,7 +142,7 @@ public class MqttService extends Service implements MqttCallback {
     /************************************************************************/
     // connection to the message broker
     //private IMqttClient mqttClient = null;
-    private GrofersMqttClient mqttClient = null;
+    private KhooniMqttClient mqttClient = null;
 
     // receiver that notifies the Service when the phone gets data connection
     private NetworkConnectionIntentReceiver netConnReceiver;
@@ -266,7 +258,7 @@ public class MqttService extends Service implements MqttCallback {
                     // note that this topicName could include a wildcard, so
                     //  even just with one subscription, we could receive
                     //  messages for multiple topics
-                    subscribeToTopic(topicName);
+                    subscribeToTopic(mTopics);
                 }
             }
             else
@@ -311,7 +303,7 @@ public class MqttService extends Service implements MqttCallback {
             // if we have been running already, we re-send any stored data
             rebroadcastStatus();
             //TODO: Check--->
-            //rebroadcastReceivedMessages();
+            rebroadcastReceivedMessages();
         }
     }
 
@@ -339,10 +331,15 @@ public class MqttService extends Service implements MqttCallback {
         boolean isOnline = isOnline();
         boolean isConnected = isAlreadyConnected();
 
+        /*
         if(!isOnline || !isConnected){
             Log.e("handlePublishMessageIntent:", " isOnline()=" + isOnline + ", isConnected()=" + isConnected);
+            //TODO: Save all outgoing messages in db and fire those messages when the client connects
+            //back
+
+
             return;
-        }
+        }*/
 
         byte[] payload = intent.getByteArrayExtra(MQTT_PUBLISH_MSG);
         String topic = intent.getStringExtra(MQTT_PUBLISH_MSG_TOPIC);
@@ -352,7 +349,7 @@ public class MqttService extends Service implements MqttCallback {
         {
             MqttMessage msg = new MqttMessage(payload);
             msg.setQos(1);
-            mqttClient.publish(topic, new MqttMessage(payload));
+            mqttClient.publish(topic, msg);
         }
         catch(MqttException e)
         {
@@ -409,6 +406,7 @@ public class MqttService extends Service implements MqttCallback {
 
     private void broadcastReceivedMessage(String topic, String message)
     {
+        Log.d("BROADCAST RECEIVED","topic: "+topic+", msg="+message);
         // pass a message received from the MQTT server on to the Activity UI
         //   (for times when it is running / active) so that it can be displayed
         //   in the app GUI
@@ -534,7 +532,7 @@ public class MqttService extends Service implements MqttCallback {
             //TODO: define persistence
             //MqttClientPersistence persistence = new MqttDefaultFilePersistence();
 
-            mqttClient = new GrofersMqttClient(mqttConnSpec,generateClientId(),mMqttPersistence);
+            mqttClient = new KhooniMqttClient(mqttConnSpec,generateClientId(),mMqttPersistence);
             mqttClient.setCallback(this);
 
             // register this client app has being able to receive messages
@@ -627,7 +625,7 @@ public class MqttService extends Service implements MqttCallback {
      * Send a request to the message broker to be sent messages published with
      *  the specified topic name. Wildcards are allowed.
      */
-    private void subscribeToTopic(String topicName)
+    private void subscribeToTopic(String [] topics)
     {
         boolean subscribed = false;
 
@@ -643,7 +641,8 @@ public class MqttService extends Service implements MqttCallback {
             try
             {
                 //Subscribe to all the topics available
-                mqttClient.subscribe(mTopics, qualitiesOfService);
+                //Number of elements in topics and QoS should be same
+                mqttClient.subscribe(topics, qualitiesOfService);
 
                 subscribed = true;
             }
@@ -798,7 +797,7 @@ public class MqttService extends Service implements MqttCallback {
                 {
                     // we subscribe to a topic - registering to receive push
                     //  notifications with a particular key
-                    subscribeToTopic(topicName);
+                    subscribeToTopic(mTopics);
                 }
             }
 
@@ -896,7 +895,7 @@ public class MqttService extends Service implements MqttCallback {
 
                 // reconnect
                 if (connectToBroker()) {
-                    subscribeToTopic(topicName);
+                    subscribeToTopic(mTopics);
                 }
             }
 
@@ -1055,7 +1054,7 @@ public class MqttService extends Service implements MqttCallback {
 
             // try to reconnect
             if (connectToBroker()) {
-                subscribeToTopic(topicName);
+                subscribeToTopic(mTopics);
             }
         }
 
@@ -1068,6 +1067,8 @@ public class MqttService extends Service implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
+        Log.d("MqttMessageArrived","Topic->"+topic+", message="+mqttMessage.toString()+", isDuplicate?="+mqttMessage.isDuplicate());
+
 
         // we protect against the phone switching off while we're doing this
         //  by requesting a wake lock - we request the minimum possible wake
@@ -1086,9 +1087,8 @@ public class MqttService extends Service implements MqttCallback {
         //
         //  for times when the app's Activity UI is not running, the Service
         //   will need to safely store the data that it receives
-        //if (addReceivedMessageToStore(topic, messageBody))
-        if(addReceivedMessageToStore(topic, messageBody))
-        {
+        //if(addReceivedMessageToStore(topic, messageBody))
+        //{
             // this is a new message - a value we haven't seen before
 
             //
@@ -1100,7 +1100,7 @@ public class MqttService extends Service implements MqttCallback {
             // inform the user (for times when the Activity UI isn't running)
             //   that there is new data available
             notifyUser("New data received", topic, messageBody);
-        }
+        //}
 
         // receiving this message will have kept the connection alive for us, so
         //  we take advantage of this to postpone the next scheduled ping

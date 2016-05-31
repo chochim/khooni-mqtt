@@ -110,9 +110,6 @@ public class MqttServiceDelegate {
             Bundle notificationData = intent.getExtras();
             String topic = notificationData.getString(MqttService.MQTT_MSG_RECEIVED_TOPIC);
             byte[] payload  = notificationData.getByteArray(MqttService.MQTT_MSG_RECEIVED_MSG);
-            Log.d("MessageHandlers","Total Handlers:"+messageHandlers.size());
-
-
 
             for(MessageHandler messageHandler : messageHandlers){
                 messageHandler.handleMessage(topic, payload);

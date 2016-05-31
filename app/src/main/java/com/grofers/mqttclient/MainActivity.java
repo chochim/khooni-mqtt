@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -48,6 +49,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 MqttServiceDelegate.stopService(mContext);
+                unbindMessageReceiver();
+                unbindStatusReceiver();
             }
         });
 
@@ -59,6 +62,7 @@ public class MainActivity extends AppCompatActivity
                 actionIntent.putExtra(MqttService.MQTT_PUBLISH_MSG_TOPIC, "ic");
                 String message = "message bheja";
                 actionIntent.putExtra(MqttService.MQTT_PUBLISH_MSG, message.getBytes() );
+                actionIntent.putExtra(MqttService.MQTT_QA1, 1);
                 mContext.startService(actionIntent);
             }
         });
@@ -78,6 +82,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void handleStatus(MqttService.MQTTConnectionStatus status, String reason) {
         Log.d("handleStatus:","status = "+status+", reason = "+reason);
+        //Log.d("currentTrace: ", TextUtils.join("\n",Thread.currentThread().getStackTrace()));
     }
 
 
@@ -111,6 +116,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
+    /* TODO: Check if it is working perfectly
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
@@ -118,7 +125,7 @@ public class MainActivity extends AppCompatActivity
             NotificationManager n = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             n.cancel(MqttService.MQTT_NOTIFICATION_UPDATE);
         }
-    }
+    }*/
 
     @Override
     protected void onDestroy()
