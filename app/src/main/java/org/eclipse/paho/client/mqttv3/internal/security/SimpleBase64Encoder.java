@@ -30,7 +30,7 @@ public class SimpleBase64Encoder {
 	public static String encode(byte[] bytes) {
 		// Allocate a string buffer.
 		int len = bytes.length;
-		final StringBuffer encoded = new StringBuffer((len+2)/3*4);		
+		final StringBuilder encoded = new StringBuilder((len+2)/3*4);
 		int i=0;
 		int j=len;
 		while(j>=3){
@@ -85,8 +85,8 @@ public class SimpleBase64Encoder {
 
 	/* the core conding routine. Translates an input integer into
 	 * a string of the given length.*/
-	private final static String to64(long input, int size) {
-		final StringBuffer result = new StringBuffer(size);
+	private static String to64(long input, int size) {
+		final StringBuilder result = new StringBuilder(size);
 		while (size > 0) {
 			size--;
 			result.append(PWDCHARS_ARRAY[((int) (input & 0x3f))]);
@@ -98,7 +98,7 @@ public class SimpleBase64Encoder {
 	/*
 	 * The reverse operation of to64
 	 */
-	private final static long from64(byte[] encoded, int idx, int size) {
+	private static long from64(byte[] encoded, int idx, int size) {
 		long res=0;
 		int f=0;
 		while(size>0) {
