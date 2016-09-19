@@ -1,4 +1,4 @@
-package com.grofers.mqttclient;
+package in.grofers.mqttclient;
 
 /*******************************************************************************
  * Copyright (c) 1999, 2014 IBM Corp.

@@ -1,4 +1,4 @@
-package com.grofers.mqttclient;
+package in.grofers.mqttclient;
 
 import android.app.AlarmManager;
 import android.app.NotificationManager;

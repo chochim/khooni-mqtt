@@ -5,7 +5,7 @@ android {
     buildToolsVersion "24.0.2"
 
     defaultConfig {
-        applicationId "com.grofers.mqttclient"
+        applicationId "in.grofers.mqttclient"
         minSdkVersion 16
         targetSdkVersion 24
         versionCode 1

@@ -1,4 +1,4 @@
-package com.grofers.mqttclient;
+package in.grofers.mqttclient;
 
 import org.junit.Test;
 

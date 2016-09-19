@@ -1,10 +1,9 @@
-package com.grofers.mqttclient;
+package in.grofers.mqttclient;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.content.BroadcastReceiver;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
