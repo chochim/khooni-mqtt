@@ -89,7 +89,6 @@ import static in.huhuba.paho.client.mqttv3.logging.LogUtils.LOGD;
  * 
  */
 public class ClientState {
-	private static final String CLASS_NAME = ClientState.class.getName();
 	private static final String TAG = LogUtils.makeLogTag(ClientState.class);
 	private static final String PERSISTENCE_SENT_PREFIX = "s-";
 	private static final String PERSISTENCE_CONFIRMED_PREFIX = "sc-";

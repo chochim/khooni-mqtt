@@ -35,7 +35,6 @@ import static in.huhuba.paho.client.mqttv3.logging.LogUtils.LOGD;
  * understood by the external API.
  */
 public class CommsCallback implements Runnable {
-	private static final String CLASS_NAME = CommsCallback.class.getName();
 	private static final String TAG = LogUtils.makeLogTag(CommsCallback.class);
 
 	private static final int INBOUND_QUEUE_SIZE = 10;

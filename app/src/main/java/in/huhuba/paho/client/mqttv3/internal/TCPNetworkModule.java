@@ -26,14 +26,16 @@ import java.net.SocketAddress;
 import javax.net.SocketFactory;
 
 import in.huhuba.paho.client.mqttv3.MqttException;
+import in.huhuba.paho.client.mqttv3.logging.LogUtils;
+
+import static in.huhuba.paho.client.mqttv3.logging.LogUtils.LOGD;
+import static in.huhuba.paho.client.mqttv3.logging.LogUtils.LOGE;
 
 /**
  * A network module for connecting over TCP. 
  */
 public class TCPNetworkModule implements NetworkModule {
-	private static final String CLASS_NAME = TCPNetworkModule.class.getName();
-	private static final Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT,CLASS_NAME);
-
+	private static final String TAG = LogUtils.makeLogTag(TCPNetworkModule.class);
 	protected Socket socket;
 	private SocketFactory factory;
 	private String host;
@@ -46,11 +48,9 @@ public class TCPNetworkModule implements NetworkModule {
 	 * socket.
 	 */
 	public TCPNetworkModule(SocketFactory factory, String host, int port, String resourceContext) {
-		log.setResourceName(resourceContext);
 		this.factory = factory;
 		this.host = host;
 		this.port = port;
-		
 	}
 
 	/**
@@ -59,21 +59,15 @@ public class TCPNetworkModule implements NetworkModule {
 	public void start() throws IOException, MqttException {
 		final String methodName = "start";
 		try {
-//			InetAddress localAddr = InetAddress.getLocalHost();
-//			socket = factory.createSocket(host, port, localAddr, 0);
 			// @TRACE 252=connect to host {0} port {1} timeout {2}
-			log.fine(CLASS_NAME,methodName, "252", new Object[] {host, new Integer(port), new Long(conTimeout*1000)});
+            LOGD(TAG, methodName+" 252");
 			SocketAddress sockaddr = new InetSocketAddress(host, port);
 			socket = factory.createSocket();
 			socket.connect(sockaddr, conTimeout*1000);
-		
-			// SetTcpNoDelay was originally set ot true disabling Nagle's algorithm. 
-			// This should not be required.
-//			socket.setTcpNoDelay(true);	// TCP_NODELAY on, which means we do not use Nagle's algorithm
 		}
 		catch (ConnectException ex) {
 			//@TRACE 250=Failed to create TCP socket
-			log.fine(CLASS_NAME,methodName,"250",null,ex);
+            LOGE(TAG, methodName+" 250", ex);
 			throw new MqttException(MqttException.REASON_CODE_SERVER_CONNECT_ERROR, ex);
 		}
 	}
