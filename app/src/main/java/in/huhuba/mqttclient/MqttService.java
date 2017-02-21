@@ -1,5 +1,5 @@
 package in.huhuba.mqttclient;
-
+//Parts of the code implemented using the post http://dalelane.co.uk/blog/?p=1599
 import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -38,13 +38,13 @@ public class MqttService extends Service implements MqttCallback {
 
     // something unique to identify your app - used for stuff like accessing
     //   application preferences
-    public static final String APP_ID = "com.dalelane.mqtt";
+    public static final String APP_ID = "com.huhuba.mqtt";
     public static final String TAG = "MqttService";
 
     // constants used to notify the Activity UI of received messages
-    public static final String MQTT_MSG_RECEIVED_INTENT = "com.dalelane.mqtt.MSGRECVD";
-    public static final String MQTT_MSG_RECEIVED_TOPIC  = "com.dalelane.mqtt.MSGRECVD_TOPIC";
-    public static final String MQTT_MSG_RECEIVED_MSG    = "com.dalelane.mqtt.MSGRECVD_MSGBODY";
+    public static final String MQTT_MSG_RECEIVED_INTENT = "com.huhuba.mqtt.MSGRECVD";
+    public static final String MQTT_MSG_RECEIVED_TOPIC  = "com.huhuba.mqtt.MSGRECVD_TOPIC";
+    public static final String MQTT_MSG_RECEIVED_MSG    = "com.huhuba.mqtt.MSGRECVD_MSGBODY";
 
     // constants used to notify the Service of messages to send
     public static final String MQTT_PUBLISH_MSG_INTENT = "com.qonect.services.mqtt.SENDMSG";
@@ -57,7 +57,7 @@ public class MqttService extends Service implements MqttCallback {
     public static final String MQTT_STATUS_MSG    = "com.qonect.services.mqtt.STATUS_MSG";
 
     // constant used internally to schedule the next ping event
-    public static final String MQTT_PING_ACTION = "com.dalelane.mqtt.PING";
+    public static final String MQTT_PING_ACTION = "com.huhuba.mqtt.PING";
 
     // constants used by status bar notifications
     public static final int MQTT_NOTIFICATION_ONGOING = 1;
@@ -66,8 +66,7 @@ public class MqttService extends Service implements MqttCallback {
 
 
     // constants used to define MQTT connection status
-    public enum MQTTConnectionStatus
-    {
+    public enum MQTTConnectionStatus  {
         INITIAL,                            // initial status
         CONNECTING,                         // attempting to connect
         CONNECTED,                          // connected

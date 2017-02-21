@@ -25,6 +25,9 @@ import in.huhuba.paho.client.mqttv3.MqttToken;
 import in.huhuba.paho.client.mqttv3.internal.wire.MqttPubAck;
 import in.huhuba.paho.client.mqttv3.internal.wire.MqttPubComp;
 import in.huhuba.paho.client.mqttv3.internal.wire.MqttPublish;
+import in.huhuba.paho.client.mqttv3.logging.LogUtils;
+
+import static in.huhuba.paho.client.mqttv3.logging.LogUtils.LOGD;
 
 /**
  * Bridge between Receiver and the external API. This class gets called by
@@ -33,7 +36,7 @@ import in.huhuba.paho.client.mqttv3.internal.wire.MqttPublish;
  */
 public class CommsCallback implements Runnable {
 	private static final String CLASS_NAME = CommsCallback.class.getName();
-	private static final Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
+	private static final String TAG = LogUtils.makeLogTag(CommsCallback.class);
 
 	private static final int INBOUND_QUEUE_SIZE = 10;
 	private MqttCallback mqttCallback;
@@ -52,7 +55,6 @@ public class CommsCallback implements Runnable {
 		this.clientComms = clientComms;
 		this.messageQueue = new Vector(INBOUND_QUEUE_SIZE);
 		this.completeQueue = new Vector(INBOUND_QUEUE_SIZE);
-		log.setResourceName(clientComms.getClient().getClientId());
 	}
 
 	public void setClientState(ClientState clientState) {
@@ -87,14 +89,14 @@ public class CommsCallback implements Runnable {
 		synchronized (lifecycle) {
 			if (running) {
 				// @TRACE 700=stopping
-				log.fine(CLASS_NAME, methodName, "700");
+                LOGD(TAG, methodName+" 700");
 				running = false;
 				if (!Thread.currentThread().equals(callbackThread)) {
 					try {
 						synchronized (workAvailable) {
 							// @TRACE 701=notify workAvailable and wait for run
 							// to finish
-							log.fine(CLASS_NAME, methodName, "701");
+                            LOGD(TAG, methodName+" 701");
 							workAvailable.notifyAll();
 						}
 						// Wait for the thread to finish.
@@ -105,7 +107,7 @@ public class CommsCallback implements Runnable {
 			}
 			callbackThread = null;
 			// @TRACE 703=stopped
-			log.fine(CLASS_NAME, methodName, "703");
+            LOGD(TAG, methodName+" 703");
 		}
 	}
 
@@ -123,7 +125,7 @@ public class CommsCallback implements Runnable {
 						if (running && messageQueue.isEmpty()
 								&& completeQueue.isEmpty()) {
 							// @TRACE 704=wait for workAvailable
-							log.fine(CLASS_NAME, methodName, "704");
+                            LOGD(TAG, methodName+" 704");
 							workAvailable.wait();
 						}
 					}
@@ -169,7 +171,7 @@ public class CommsCallback implements Runnable {
 				// Users code could throw an Error or Exception e.g. in the case
 				// of class NoClassDefFoundError
 				// @TRACE 714=callback threw exception
-				log.fine(CLASS_NAME, methodName, "714", null, ex);
+                LOGD(TAG, methodName+" 714");
 				running = false;
 				clientComms.shutdownConnection(null, new MqttException(ex));
 				
@@ -179,7 +181,7 @@ public class CommsCallback implements Runnable {
                     // some space on the queue...
 
                     // @TRACE 706=notify spaceAvailable
-                    log.fine(CLASS_NAME, methodName, "706");
+                    LOGD(TAG, methodName+" 706");
                     spaceAvailable.notifyAll();
                 }
 			}
@@ -191,7 +193,7 @@ public class CommsCallback implements Runnable {
 		final String methodName = "handleActionComplete";
 		synchronized (token) {
 			// @TRACE 705=callback and notify for key={0}
-			log.fine(CLASS_NAME, methodName, "705",	new Object[] { token.internalTok.getKey() });
+            LOGD(TAG, methodName+" 705");
 			
 			// Unblock any waiters and if pending complete now set completed
 			token.internalTok.notifyComplete();
@@ -241,14 +243,14 @@ public class CommsCallback implements Runnable {
 		try {
 			if (mqttCallback != null && cause != null) {
 				// @TRACE 708=call connectionLost
-				log.fine(CLASS_NAME, methodName, "708", new Object[] { cause });
+                LOGD(TAG, methodName+" 708");
 				mqttCallback.connectionLost(cause);
 			}
 		} catch (java.lang.Throwable t) {
 			// Just log the fact that a throwable has caught connection lost 
 			// is called during shutdown processing so no need to do anything else
 			// @TRACE 720=exception from connectionLost {0}
-			log.fine(CLASS_NAME, methodName, "720", new Object[] { t });
+            LOGD(TAG, methodName+" 720");
 		}
 	}
 
@@ -266,13 +268,11 @@ public class CommsCallback implements Runnable {
 			if (asyncCB != null) {
 				if (token.getException() == null) {
 					// @TRACE 716=call onSuccess key={0}
-					log.fine(CLASS_NAME, methodName, "716",
-							new Object[] { token.internalTok.getKey() });
+                    LOGD(TAG, methodName+" 716");
 					asyncCB.onSuccess(token);
 				} else {
 					// @TRACE 717=call onFailure key {0}
-					log.fine(CLASS_NAME, methodName, "716",
-							new Object[] { token.internalTok.getKey() });
+                    LOGD(TAG, methodName+" 716");
 					asyncCB.onFailure(token, token.getException());
 				}
 			}
@@ -298,7 +298,7 @@ public class CommsCallback implements Runnable {
 				while (running && !quiescing && messageQueue.size() >= INBOUND_QUEUE_SIZE) {
 					try {
 						// @TRACE 709=wait for spaceAvailable
-						log.fine(CLASS_NAME, methodName, "709");
+                        LOGD(TAG, methodName+" 709");
 						spaceAvailable.wait(200);
 					} catch (InterruptedException ex) {
 					}
@@ -309,7 +309,7 @@ public class CommsCallback implements Runnable {
 				// Notify the CommsCallback thread that there's work to do...
 				synchronized (workAvailable) {
 					// @TRACE 710=new msg avail, notify workAvailable
-					log.fine(CLASS_NAME, methodName, "710");
+                    LOGD(TAG, methodName+" 710");
 					workAvailable.notifyAll();
 				}
 			}
@@ -326,7 +326,7 @@ public class CommsCallback implements Runnable {
 		this.quiescing = true;
 		synchronized (spaceAvailable) {
 			// @TRACE 711=quiesce notify spaceAvailable
-			log.fine(CLASS_NAME, methodName, "711");
+            LOGD(TAG, methodName+" 711");
 			// Unblock anything waiting for space...
 			spaceAvailable.notifyAll();
 		}
@@ -347,8 +347,7 @@ public class CommsCallback implements Runnable {
 			String destName = publishMessage.getTopicName();
 
 			// @TRACE 713=call messageArrived key={0} topic={1}
-			log.fine(CLASS_NAME, methodName, "713", new Object[] { 
-					new Integer(publishMessage.getMessageId()), destName });
+            LOGD(TAG, methodName+" 713");
 			mqttCallback.messageArrived(destName, publishMessage.getMessage());
 			if (publishMessage.getMessage().getQos() == 1) {
 				this.clientComms.internalSend(new MqttPubAck(publishMessage),
@@ -369,7 +368,7 @@ public class CommsCallback implements Runnable {
 			completeQueue.addElement(token);
 			synchronized (workAvailable) {
 				// @TRACE 715=new workAvailable. key={0}
-				log.fine(CLASS_NAME, methodName, "715", new Object[] { token.internalTok.getKey() });
+                LOGD(TAG, methodName+" 715");
 				workAvailable.notifyAll();
 			}
 		} else {
@@ -380,7 +379,7 @@ public class CommsCallback implements Runnable {
 				// Users code could throw an Error or Exception e.g. in the case
 				// of class NoClassDefFoundError
 				// @TRACE 719=callback threw ex:
-				log.fine(CLASS_NAME, methodName, "719", null, ex);
+                LOGD(TAG, methodName+" 719");
 				
 				// Shutdown likely already in progress but no harm to confirm
 				clientComms.shutdownConnection(null, new MqttException(ex));
