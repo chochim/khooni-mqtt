@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -14,8 +13,13 @@ import com.grofers.mqttclient.R;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import in.huhuba.paho.client.mqttv3.logging.LogUtils;
+
+import static in.huhuba.paho.client.mqttv3.logging.LogUtils.LOGD;
+
 public class MainActivity extends AppCompatActivity
         implements MqttServiceDelegate.MessageHandler, MqttServiceDelegate.StatusHandler {
+    private static final String TAG = LogUtils.makeLogTag(MainActivity.class);
 
     Button connectBtn, disconnectBtn, serverBtn;
     Context mContext;
@@ -74,14 +78,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void handleMessage(String topic, byte[] payload) {
         String message = new String(payload);
-
-        Log.d("handleMessage,", "topic="+topic+", message="+message);
+        LOGD(TAG, "topic="+topic+", message="+message);
     }
+
+
 
     @Override
     public void handleStatus(MqttService.MQTTConnectionStatus status, String reason) {
-        Log.d("handleStatus:","status = "+status+", reason = "+reason);
-        //Log.d("currentTrace: ", TextUtils.join("\n",Thread.currentThread().getStackTrace()));
+        LOGD(TAG, "status = "+status+", reason = "+reason);
     }
 
 
